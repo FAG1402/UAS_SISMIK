@@ -1,0 +1,2 @@
+# UAS_SISMIK
+Nyoba
