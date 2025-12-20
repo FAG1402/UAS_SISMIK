@@ -77,8 +77,9 @@
                     
                     <div class="flex items-center gap-4 bg-gray-300/30 p-4 rounded-2xl">
                         <div class="relative">
-                            <svg class="w-16 h-16 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2 6 6 0 00-4 4 2 2 0 002 2h4zm0 0h6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h0a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            <svg class="w-16 h-16 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 00.495-7.467 5.99 5.99 0 00-1.925 3.546 5.974 5.974 0 01-2.133-1.001A3.75 3.75 0 0012 18z" />
                             </svg>
                         </div>
                         <div>
@@ -104,7 +105,7 @@
                         <div class="relative w-64 h-32 overflow-hidden">
                             <svg class="w-64 h-64" viewBox="0 0 100 100">
                                 <circle cx="50" cy="50" r="40" fill="none" stroke="#6b7280" stroke-width="12" stroke-dasharray="125.6" stroke-dashoffset="0" transform="rotate(-180 50 50)" class="opacity-30" />
-                                <circle id="gauge-bar" cx="50" cy="50" r="40" fill="none" stroke="#4b5563" stroke-width="12" stroke-dasharray="125.6" stroke-dashoffset="125.6" stroke-linecap="round" transform="rotate(-180 50 50)" style="transition: stroke-dashoffset 1s ease;" />
+                                <circle id="gauge-bar" cx="50" cy="50" r="40" fill="none" stroke="#eab308" stroke-width="12" stroke-dasharray="125.6" stroke-dashoffset="125.6" stroke-linecap="round" transform="rotate(-180 50 50)" style="transition: stroke-dashoffset 1s ease;" />
                             </svg>
                         </div>
                         <h3 class="text-lg font-bold text-black mt-2">Kelembaban: <span id="val-hum" class="text-2xl">--</span>%</h3>
@@ -147,16 +148,17 @@
 
             <button id="btn-door" onclick="handleDoorAccess()" class="w-full bg-black text-white h-[72px] rounded-[29px] font-bold text-2xl tracking-widest hover:bg-gray-800 transition active:scale-95 shadow-2xl flex items-center justify-center gap-3">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                DOOR ACCESS (RESET/UNLOCK)
+                <span id="btn-door-text">DOOR ACCESS</span>
             </button>
-            <p id="door-msg" class="text-center text-sm font-bold text-green-600 hidden">Sistem Di-Reset! Sensor aktif kembali.</p>
+            <p id="door-msg" class="text-center text-sm font-bold text-green-600 hidden">Perintah Terkirim!</p>
         </div>
     </div>
 
-<script type="module">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
         import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
+        // === KONFIGURASI API KEY DARI USER ===
         const firebaseConfig = {
             apiKey: "AIzaSyCgSCj0W_hghMk-BhQP5WfdMiphZqXJk-Q",
             authDomain: "storage-secutiry.firebaseapp.com",
@@ -168,9 +170,6 @@
             measurementId: "G-BQ7G3ZQHWS"
         };
 
-        // Debugging: Cek apakah config terbaca
-        console.log("Menghubungkan ke Firebase...", firebaseConfig.databaseURL);
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
@@ -180,7 +179,6 @@
 
         window.onload = () => {
             if(localStorage.getItem('isLoggedIn') === 'true') {
-                console.log("User sudah login, membuka dashboard...");
                 showDashboard(localStorage.getItem('username'));
             }
         }
@@ -190,34 +188,20 @@
             const pass = document.getElementById('password-in').value;
             
             if(!user || !pass) { showError("Isi semua kolom!"); return; }
-
             const userRef = ref(db, 'users/' + user);
-            console.log("Mengecek user di database:", user);
             
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
-                    const savedPassword = snapshot.val();
-                    if (savedPassword === pass) {
-                        console.log("Login Berhasil!");
+                    if (snapshot.val() === pass) {
                         localStorage.setItem('isLoggedIn', 'true');
                         localStorage.setItem('username', user.toUpperCase());
                         showDashboard(user.toUpperCase());
-                    } else {
-                        showError("Password Salah!");
-                    }
-                } else {
-                    showError("Username tidak ditemukan!");
-                }
-            }).catch((error) => {
-                console.error("ERROR LOGIN:", error);
-                showError("Error Koneksi: " + error.message);
-            });
+                    } else { showError("Password Salah!"); }
+                } else { showError("Username tidak ditemukan!"); }
+            }).catch((error) => { showError("Error Koneksi Database!"); });
         }
 
-        window.handleLogout = () => {
-            localStorage.clear(); 
-            location.reload(); 
-        }
+        window.handleLogout = () => { localStorage.clear(); location.reload(); }
 
         function showError(msg) {
             errorMsg.innerText = msg;
@@ -231,47 +215,51 @@
             startSensorListener();
         }
 
+        // === LOGIKA BARU: TOGGLE BUKA/TUTUP ===
         window.handleDoorAccess = () => {
-            console.log("Mengirim perintah BUKA pintu...");
-            set(ref(db, 'gudang/kontrol_pintu'), "BUKA")
-                .then(() => console.log("Perintah terkirim!"))
-                .catch((err) => console.error("Gagal kirim perintah:", err));
+            // Cek status pintu sekarang dari teks yang tampil di layar
+            const currentStatus = document.getElementById('door-text-status').innerText;
+            
+            // Jika OPEN -> Kirim Perintah TUTUP
+            // Jika CLOSED -> Kirim Perintah BUKA
+            let command = "BUKA";
+            if (currentStatus === "OPEN") {
+                command = "TUTUP";
+            }
 
+            set(ref(db, 'gudang/kontrol_pintu'), command);
+            
+            // Animasi Tombol
             const btn = document.getElementById('btn-door');
+            const btnText = document.getElementById('btn-door-text');
             const msg = document.getElementById('door-msg');
-            btn.classList.add('bg-green-600', 'scale-95');
-            btn.innerText = "PROCESSING...";
+            
+            btn.classList.add('bg-blue-600', 'scale-95');
+            btnText.innerText = (command === "BUKA") ? "OPENING..." : "LOCKING...";
+            msg.innerText = "Mengirim Perintah: " + command;
             msg.classList.remove('hidden');
+            
             setTimeout(() => {
-                btn.classList.remove('bg-green-600', 'scale-95');
-                btn.innerHTML = `<svg class="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> DOOR ACCESS (RESET/UNLOCK)`;
+                btn.classList.remove('bg-blue-600', 'scale-95');
+                btnText.innerText = "DOOR ACCESS";
                 msg.classList.add('hidden');
+                // Kita kembalikan ke STANDBY agar Wemos tidak looping
                 set(ref(db, 'gudang/kontrol_pintu'), "STANDBY");
             }, 3000);
         }
 
         function startSensorListener() {
-            console.log("Mulai mendengarkan data sensor...");
             const gudangRef = ref(db, 'gudang');
             onValue(gudangRef, (snapshot) => {
                 const data = snapshot.val();
-                
-                // DEBUG: Lihat data mentah di Console
-                console.log("Data diterima dari Firebase:", data);
+                if(!data) return;
 
-                if(!data) {
-                    console.warn("Data Kosong! Pastikan folder 'gudang' ada di database.");
-                    return;
-                }
-
-                // UPDATE UI SENSOR
                 document.getElementById('val-temp').innerText = data.suhu;
                 const tempBg = document.getElementById('temp-bg');
                 if(data.suhu > 30) tempBg.className = "mt-1 px-3 py-1 bg-red-200 rounded-md inline-block shadow-sm"; 
                 else if(data.suhu < 20) tempBg.className = "mt-1 px-3 py-1 bg-blue-200 rounded-md inline-block shadow-sm"; 
                 else tempBg.className = "mt-1 px-3 py-1 bg-white rounded-md inline-block shadow-sm"; 
 
-                // MOVEMENT
                 const statusText = document.getElementById('status-text');
                 const radarContainer = document.getElementById('radar-container');
                 if (data.keamanan && (data.keamanan.includes("PENYUSUP") || data.keamanan.includes("BAHAYA"))) {
@@ -286,18 +274,16 @@
                     radarContainer.classList.add("text-green-600");
                 }
 
-                // KELEMBABAN
                 document.getElementById('val-hum').innerText = data.kelembaban;
                 const maxDash = 125.6; 
                 const dashValue = maxDash - ((data.kelembaban / 100) * maxDash);
                 document.getElementById('gauge-bar').style.strokeDashoffset = dashValue;
 
-                // RFID USER
                 document.getElementById('rfid-user').innerText = data.user_terakhir;
 
-                // DOOR STATUS
                 const doorText = document.getElementById('door-text-status');
                 const doorIcon = document.getElementById('door-icon');
+                // Mengubah status text agar logika tombol Toggle bekerja
                 if (data.status_pintu === "TERBUKA" || data.status_pintu === "OPEN" || data.status_pintu == 1) {
                     doorText.innerText = "OPEN";
                     doorText.className = "font-bold text-xs mt-1 text-green-600";
@@ -309,11 +295,8 @@
                     doorIcon.classList.remove("text-green-500");
                     doorIcon.classList.add("text-red-500");
                 }
-            }, (error) => {
-                console.error("GAGAL BACA DATA:", error);
             });
         }
     </script>
 </body>
-
 </html>
