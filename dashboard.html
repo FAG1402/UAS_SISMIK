@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage Security System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* RADAR ANIMATION */
+        .radar-box {
+            position: relative; width: 80px; height: 80px; border-radius: 50%;
+            border: 2px solid currentColor; background: rgba(255, 255, 255, 0.1);
+            overflow: hidden; box-shadow: 0 0 10px currentColor;
+        }
+        .radar-box::before, .radar-box::after {
+            content: ''; position: absolute; background: currentColor; opacity: 0.3;
+        }
+        .radar-box::before { top: 50%; left: 0; width: 100%; height: 1px; }
+        .radar-box::after { left: 50%; top: 0; width: 1px; height: 100%; }
+        .radar-beam {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, currentColor 360deg);
+            opacity: 0.4; animation: radar-spin 2s linear infinite;
+        }
+        .radar-dot {
+            position: absolute; top: 50%; left: 50%; width: 6px; height: 6px;
+            background: currentColor; border-radius: 50%;
+            transform: translate(-50%, -50%); box-shadow: 0 0 5px currentColor;
+        }
+        @keyframes radar-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-[#d9d9d9] min-h-screen flex flex-col">
+
+    <nav class="bg-[#0072ff] text-white shadow-lg sticky top-0 z-50 h-[90px] flex items-center justify-between px-6">
+        <div class="flex items-center gap-3">
+            <div class="bg-black/20 p-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+            </div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-wide">Storage Security System</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-800 transition text-white" onclick="handleLogout()" title="Logout">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex items-center justify-center p-4">
+
+        <div id="login-section" class="relative w-full max-w-[466px] bg-[#999a9a] rounded-[38px] shadow-2xl p-8 fade-in">
+            <a href="index.html" class="absolute -top-4 -right-4 w-12 h-12 bg-black text-white rounded-full flex items-center justify-center text-xl font-bold hover:bg-gray-800 cursor-pointer shadow-lg">✕</a>
+            <div class="w-[118px] h-[118px] bg-gray-300 rounded-full mx-auto mb-8 flex items-center justify-center border-4 border-gray-400">
+                <svg class="w-16 h-16 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+            </div>
+            <div class="space-y-8">
+                <input type="text" id="username-in" class="w-full bg-transparent border-b-2 border-white text-white placeholder-gray-200 px-2 py-3 focus:outline-none focus:border-[#73f3f3] text-lg" placeholder="Username">
+                <input type="password" id="password-in" class="w-full bg-transparent border-b-2 border-white text-white placeholder-gray-200 px-2 py-3 focus:outline-none focus:border-[#73f3f3] text-lg" placeholder="Password">
+                <p id="error-msg" class="text-red-600 bg-red-100 p-2 rounded text-center text-sm font-bold hidden">Username Salah!</p>
+                <button onclick="handleLogin()" class="w-full bg-[#73f3f3] hover:bg-[#5fd9d9] text-white py-4 rounded-full font-bold text-xl tracking-widest shadow-md transition transform hover:scale-105 mt-6">LOGIN</button>
+            </div>
+        </div>
+
+        <div id="dashboard-section" class="hidden w-full max-w-5xl fade-in flex flex-col gap-6">
+            
+            <div class="bg-[#ffefef] rounded-[43px] shadow-xl p-8 relative">
+                <h2 class="text-center font-black text-3xl text-black mb-8 tracking-widest">DATA ACCESS</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-12">
+                    
+                    <div class="flex items-center gap-4 bg-gray-300/30 p-4 rounded-2xl">
+                        <div class="relative">
+                            <svg class="w-16 h-16 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2 6 6 0 00-4 4 2 2 0 002 2h4zm0 0h6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h0a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-black">Suhu Ruangan</h3>
+                            <div id="temp-bg" class="mt-1 px-3 py-1 bg-white rounded-md inline-block shadow-sm">
+                                <p class="text-3xl font-black text-black"><span id="val-temp">--</span>°C</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center bg-gray-300/30 p-4 rounded-2xl text-center">
+                        <div id="radar-container" class="text-green-600 transition-colors duration-300">
+                            <div class="radar-box mx-auto">
+                                <div class="radar-beam"></div>
+                                <div class="radar-dot"></div>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-bold mt-2 uppercase tracking-wide">MOVEMENT</h3>
+                        <p id="status-text" class="text-sm font-bold text-green-700">AMAN</p>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="relative w-64 h-32 overflow-hidden">
+                            <svg class="w-64 h-64" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="#6b7280" stroke-width="12" stroke-dasharray="125.6" stroke-dashoffset="0" transform="rotate(-180 50 50)" class="opacity-30" />
+                                <circle id="gauge-bar" cx="50" cy="50" r="40" fill="none" stroke="#4b5563" stroke-width="12" stroke-dasharray="125.6" stroke-dashoffset="125.6" stroke-linecap="round" transform="rotate(-180 50 50)" style="transition: stroke-dashoffset 1s ease;" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-black mt-2">Kelembaban: <span id="val-hum" class="text-2xl">--</span>%</h3>
+                    </div>
+
+                    <div class="flex flex-col gap-4">
+                        <div>
+                            <h3 class="font-bold text-black text-xs mb-1">WEB ADMIN :</h3>
+                            <div class="w-full bg-white/50 h-8 rounded px-2 flex items-center shadow-sm">
+                                <p id="display-username" class="font-bold text-blue-800 uppercase text-sm">--</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-black text-xs mb-1">LAST RFID ACCESS :</h3>
+                            <div class="w-full bg-white/50 h-8 rounded px-2 flex items-center shadow-sm justify-between">
+                                <p id="rfid-user" class="font-bold text-purple-700 uppercase text-sm">WAITING...</p>
+                                <span class="text-[10px] text-gray-500 font-bold">RFID TAP</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <div>
+                                <h3 class="font-bold text-black text-sm">DOOR INFO :</h3>
+                                <h3 class="font-bold text-black text-sm">SENSOR :</h3>
+                                <p id="door-text-status" class="font-bold text-xs mt-1 text-red-600">CLOSED</p>
+                            </div>
+                            <div class="bg-gray-600 p-2 rounded-lg w-20 h-24 flex items-center justify-center shadow-lg relative">
+                                <svg id="door-icon" class="w-14 h-14 text-red-500 transition-colors duration-300" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm2 5h2v2H8v-2z"/> 
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="absolute inset-0 pointer-events-none hidden md:block">
+                    <div class="absolute top-[20%] bottom-[10%] left-1/2 w-0.5 border-l-2 border-dashed border-blue-400 opacity-50"></div>
+                    <div class="absolute top-[60%] left-[10%] right-[10%] h-0.5 border-t-2 border-dashed border-blue-400 opacity-50"></div>
+                </div>
+            </div>
+
+            <button id="btn-door" onclick="handleDoorAccess()" class="w-full bg-black text-white h-[72px] rounded-[29px] font-bold text-2xl tracking-widest hover:bg-gray-800 transition active:scale-95 shadow-2xl flex items-center justify-center gap-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                DOOR ACCESS (RESET/UNLOCK)
+            </button>
+            <p id="door-msg" class="text-center text-sm font-bold text-green-600 hidden">Sistem Di-Reset! Sensor aktif kembali.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        // IMPORT 'GET' UNTUK LOGIN DATABASE
+        import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+        // === KONFIGURASI API KEY DARI USER ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgSCj0W_hghMk-BhQP5WfdMiphZqXJk-Q",
+            authDomain: "storage-secutiry.firebaseapp.com",
+            databaseURL: "https://storage-secutiry-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "storage-secutiry",
+            storageBucket: "storage-secutiry.firebasestorage.app",
+            messagingSenderId: "43471264504",
+            appId: "1:43471264504:web:5b6de01e1f7dae2e04390d",
+            measurementId: "G-BQ7G3ZQHWS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const loginSec = document.getElementById('login-section');
+        const dashSec = document.getElementById('dashboard-section');
+        const errorMsg = document.getElementById('error-msg');
+
+        // Cek Sesi (LocalStorage)
+        window.onload = () => {
+            if(localStorage.getItem('isLoggedIn') === 'true') {
+                showDashboard(localStorage.getItem('username'));
+            }
+        }
+
+        // === LOGIKA LOGIN DATABASE MURNI (TANPA AUTH) ===
+        window.handleLogin = () => {
+            const user = document.getElementById('username-in').value.trim();
+            const pass = document.getElementById('password-in').value;
+            
+            if(!user || !pass) { showError("Isi semua kolom!"); return; }
+
+            // Cek ke Database: users/{username}
+            const userRef = ref(db, 'users/' + user);
+            
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const savedPassword = snapshot.val();
+                    // Cocokkan Password
+                    if (savedPassword === pass) {
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('username', user.toUpperCase());
+                        showDashboard(user.toUpperCase());
+                    } else {
+                        showError("Password Salah!");
+                    }
+                } else {
+                    showError("Username tidak ditemukan!");
+                }
+            }).catch((error) => {
+                console.error(error);
+                showError("Error Koneksi Database!");
+            });
+        }
+
+        window.handleLogout = () => {
+            localStorage.clear(); 
+            location.reload(); 
+        }
+
+        function showError(msg) {
+            errorMsg.innerText = msg;
+            errorMsg.classList.remove('hidden');
+        }
+
+        function showDashboard(username) {
+            loginSec.classList.add('hidden');
+            dashSec.classList.remove('hidden');
+            document.getElementById('display-username').innerText = username;
+            startSensorListener();
+        }
+
+        window.handleDoorAccess = () => {
+            set(ref(db, 'gudang/kontrol_pintu'), "BUKA");
+            const btn = document.getElementById('btn-door');
+            const msg = document.getElementById('door-msg');
+            btn.classList.add('bg-green-600', 'scale-95');
+            btn.innerText = "PROCESSING...";
+            msg.classList.remove('hidden');
+            setTimeout(() => {
+                btn.classList.remove('bg-green-600', 'scale-95');
+                btn.innerHTML = `<svg class="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> DOOR ACCESS (RESET/UNLOCK)`;
+                msg.classList.add('hidden');
+                set(ref(db, 'gudang/kontrol_pintu'), "STANDBY");
+            }, 3000);
+        }
+
+        function startSensorListener() {
+            const gudangRef = ref(db, 'gudang');
+            onValue(gudangRef, (snapshot) => {
+                const data = snapshot.val();
+                if(!data) return;
+
+                // UPDATE UI SENSOR
+                document.getElementById('val-temp').innerText = data.suhu;
+                const tempBg = document.getElementById('temp-bg');
+                if(data.suhu > 30) tempBg.className = "mt-1 px-3 py-1 bg-red-200 rounded-md inline-block shadow-sm"; 
+                else if(data.suhu < 20) tempBg.className = "mt-1 px-3 py-1 bg-blue-200 rounded-md inline-block shadow-sm"; 
+                else tempBg.className = "mt-1 px-3 py-1 bg-white rounded-md inline-block shadow-sm"; 
+
+                // MOVEMENT
+                const statusText = document.getElementById('status-text');
+                const radarContainer = document.getElementById('radar-container');
+                if (data.keamanan && (data.keamanan.includes("PENYUSUP") || data.keamanan.includes("BAHAYA"))) {
+                    statusText.innerText = "BAHAYA (MOTION)";
+                    statusText.className = "text-sm font-bold text-red-600 animate-pulse";
+                    radarContainer.classList.remove("text-green-600");
+                    radarContainer.classList.add("text-red-600");
+                } else {
+                    statusText.innerText = "AMAN";
+                    statusText.className = "text-sm font-bold text-green-700";
+                    radarContainer.classList.remove("text-red-600");
+                    radarContainer.classList.add("text-green-600");
+                }
+
+                // KELEMBABAN
+                document.getElementById('val-hum').innerText = data.kelembaban;
+                const maxDash = 125.6; 
+                const dashValue = maxDash - ((data.kelembaban / 100) * maxDash);
+                document.getElementById('gauge-bar').style.strokeDashoffset = dashValue;
+
+                // RFID USER
+                document.getElementById('rfid-user').innerText = data.user_terakhir;
+
+                // DOOR STATUS
+                const doorText = document.getElementById('door-text-status');
+                const doorIcon = document.getElementById('door-icon');
+                if (data.status_pintu === "TERBUKA" || data.status_pintu === "OPEN" || data.status_pintu == 1) {
+                    doorText.innerText = "OPEN";
+                    doorText.className = "font-bold text-xs mt-1 text-green-600";
+                    doorIcon.classList.remove("text-red-500");
+                    doorIcon.classList.add("text-green-500");
+                } else {
+                    doorText.innerText = "CLOSED";
+                    doorText.className = "font-bold text-xs mt-1 text-red-600";
+                    doorIcon.classList.remove("text-green-500");
+                    doorIcon.classList.add("text-red-500");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
