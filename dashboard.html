@@ -153,12 +153,10 @@
         </div>
     </div>
 
-    <script type="module">
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-        // IMPORT 'GET' UNTUK LOGIN DATABASE
         import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-        // === KONFIGURASI API KEY DARI USER ===
         const firebaseConfig = {
             apiKey: "AIzaSyCgSCj0W_hghMk-BhQP5WfdMiphZqXJk-Q",
             authDomain: "storage-secutiry.firebaseapp.com",
@@ -170,6 +168,9 @@
             measurementId: "G-BQ7G3ZQHWS"
         };
 
+        // Debugging: Cek apakah config terbaca
+        console.log("Menghubungkan ke Firebase...", firebaseConfig.databaseURL);
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
@@ -177,28 +178,27 @@
         const dashSec = document.getElementById('dashboard-section');
         const errorMsg = document.getElementById('error-msg');
 
-        // Cek Sesi (LocalStorage)
         window.onload = () => {
             if(localStorage.getItem('isLoggedIn') === 'true') {
+                console.log("User sudah login, membuka dashboard...");
                 showDashboard(localStorage.getItem('username'));
             }
         }
 
-        // === LOGIKA LOGIN DATABASE MURNI (TANPA AUTH) ===
         window.handleLogin = () => {
             const user = document.getElementById('username-in').value.trim();
             const pass = document.getElementById('password-in').value;
             
             if(!user || !pass) { showError("Isi semua kolom!"); return; }
 
-            // Cek ke Database: users/{username}
             const userRef = ref(db, 'users/' + user);
+            console.log("Mengecek user di database:", user);
             
             get(userRef).then((snapshot) => {
                 if (snapshot.exists()) {
                     const savedPassword = snapshot.val();
-                    // Cocokkan Password
                     if (savedPassword === pass) {
+                        console.log("Login Berhasil!");
                         localStorage.setItem('isLoggedIn', 'true');
                         localStorage.setItem('username', user.toUpperCase());
                         showDashboard(user.toUpperCase());
@@ -209,8 +209,8 @@
                     showError("Username tidak ditemukan!");
                 }
             }).catch((error) => {
-                console.error(error);
-                showError("Error Koneksi Database!");
+                console.error("ERROR LOGIN:", error);
+                showError("Error Koneksi: " + error.message);
             });
         }
 
@@ -232,7 +232,11 @@
         }
 
         window.handleDoorAccess = () => {
-            set(ref(db, 'gudang/kontrol_pintu'), "BUKA");
+            console.log("Mengirim perintah BUKA pintu...");
+            set(ref(db, 'gudang/kontrol_pintu'), "BUKA")
+                .then(() => console.log("Perintah terkirim!"))
+                .catch((err) => console.error("Gagal kirim perintah:", err));
+
             const btn = document.getElementById('btn-door');
             const msg = document.getElementById('door-msg');
             btn.classList.add('bg-green-600', 'scale-95');
@@ -247,10 +251,18 @@
         }
 
         function startSensorListener() {
+            console.log("Mulai mendengarkan data sensor...");
             const gudangRef = ref(db, 'gudang');
             onValue(gudangRef, (snapshot) => {
                 const data = snapshot.val();
-                if(!data) return;
+                
+                // DEBUG: Lihat data mentah di Console
+                console.log("Data diterima dari Firebase:", data);
+
+                if(!data) {
+                    console.warn("Data Kosong! Pastikan folder 'gudang' ada di database.");
+                    return;
+                }
 
                 // UPDATE UI SENSOR
                 document.getElementById('val-temp').innerText = data.suhu;
@@ -297,8 +309,11 @@
                     doorIcon.classList.remove("text-green-500");
                     doorIcon.classList.add("text-red-500");
                 }
+            }, (error) => {
+                console.error("GAGAL BACA DATA:", error);
             });
         }
     </script>
 </body>
+
 </html>
